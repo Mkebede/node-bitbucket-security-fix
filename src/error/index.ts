@@ -3,6 +3,20 @@ type RequestOptions = import('./types').RequestOptions
 
 type AbstractHTTPError = import('./types').HTTPError
 
+function sanitizeRequest(request: RequestOptions | undefined): RequestOptions | undefined {
+  if (!request) return request
+
+  const sanitizedHeaders = { ...request.headers }
+  if (sanitizedHeaders.authorization) {
+    sanitizedHeaders.authorization = '[REDACTED]'
+  }
+  
+  return {
+    ...request,
+    headers: sanitizedHeaders
+  }
+}
+
 export class HTTPError extends Error implements AbstractHTTPError {
   public error: any | undefined
   public headers: Headers | undefined
@@ -26,7 +40,7 @@ export class HTTPError extends Error implements AbstractHTTPError {
     this.name = 'HTTPError'
     this.error = options.error
     this.headers = options.headers
-    this.request = options.request
+    this.request = sanitizeRequest(options.request)
     this.status = statusCode
   }
 }
